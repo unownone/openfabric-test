@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <!-- ############################################################ -->
+    <!--   DBMS SPECIFIC SETUP   -->
+    <!-- ############################################################ -->
+    <property name="uuid_type" value="CHAR(36)" dbms="postgresql" />
+    <property name="uuid_type" value="uniqueidentifier" dbms="mssql" />
+    <property name="uuid_type" value="RAW(16)" dbms="oracle" />
+    <property name="uuid_function" value="uuid_generate_v4()" dbms="postgresql" />
+    <property name="uuid_function" value="NEWID()" dbms="mssql" />
+    <property name="uuid_function" value="sys_guid()" dbms="oracle" />
+
+    <changeSet id="EXTENSION" author="andrei">
+        <sql> CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; </sql>
+    </changeSet>
+    <changeSet id="SEQUENCE" author="andrei">
+        <sql> CREATE SEQUENCE IF NOT EXISTS hibernate_sequence START 1; </sql>
+    </changeSet>
+
+    <!-- ############################################################ -->
+    <!--  Worker  -->
+    <!-- ############################################################ -->
+    <changeSet id="WO_01" author="andrei">
+        <createTable tableName="worker" remarks="Worker table">
+            <column name="id" type="${uuid_type}" defaultValueComputed="${uuid_function}">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="name" type="varchar(255)" />
+
+            <column name="created_at" type="DATETIME" />
+            <column name="updated_at" type="DATETIME" />
+            <column name="deleted_at" type="DATETIME" />
+        </createTable>
+    </changeSet>
+    <!-- ############################################################ -->
+    <!--  Update Worker  -->
+    <!-- ############################################################ -->
+    <changeSet id="WO_02" author="imon">
+        <addColumn tableName="worker">
+            <column name="container_id" type="varchar(64)" />
+            <column name="image" type="varchar(100)" />
+            <column name="ip" type="varchar(15)" />
+            <column name="public_port" type="int" />
+            <column name="private_port" type="int" />
+            <column name="port_type" type="varchar(10)" />
+            <column name="status" type="varchar(20)" />
+            <column name="state" type="varchar(20)" />
+        </addColumn>
+        <addUniqueConstraint tableName="worker" columnNames="container_id" />
+    </changeSet>
+    <!-- Update Worker -->
+    <changeSet id="WO_03" author="imon">
+        <dropPrimaryKey tableName="worker" />
+        <addPrimaryKey tableName="worker"
+            columnNames="container_id" />
+    </changeSet>
+    <!-- Add new Table WorkerCPU WorkerMemory -->
+    <changeSet id="WO_04" author="imon">
+        <createTable tableName="worker_memory">
+            <column name="id" type="${uuid_type}" defaultValueComputed="${uuid_function}">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="mem_usage" type="bigint" />
+            <column name="mem_limit" type="bigint" />
+
+            <column name="worker_id" type="varchar(64)" />
+
+            <column name="created_at" type="DATETIME" />
+            <column name="updated_at" type="DATETIME" />
+            <column name="deleted_at" type="DATETIME" />
+        </createTable>
+        <createTable tableName="worker_cpu">
+            <column name="id" type="${uuid_type}" defaultValueComputed="${uuid_function}">
+                <constraints nullable="false" primaryKey="true" />
+            </column>
+            <column name="cpu_total_usage" type="bigint" />
+            <column name="cpu_usage_in_kernelmode" type="bigint" />
+            <column name="cpu_usage_in_usermode" type="bigint" />
+            <column name="system_cpu_usage" type="bigint" />
+            <column name="online_cpus" type="bigint" />
+
+            <column name="worker_id" type="varchar(64)"
+            />
+            <column name="created_at" type="DATETIME" />
+            <column name="updated_at" type="DATETIME" />
+            <column name="deleted_at" type="DATETIME" />
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

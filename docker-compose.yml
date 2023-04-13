@@ -1,0 +1,10 @@
+services:
+
+  postgres: 
+    image: postgres:alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: openfabric
+      POSTGRES_PASSWORD: 9c231a1c61a5fe322dd1
+      POSTGRES_DB: test
